@@ -1,6 +1,6 @@
+import { HomeOutlined, MailOutlined, PhoneOutlined } from "@ant-design/icons";
+import { Button, Card, Descriptions, Form, Input, Modal } from "antd";
 import React, { useState } from "react";
-import { Card, Avatar, Descriptions, Button, Modal, Form, Input } from "antd";
-import { UserOutlined, PhoneOutlined, MailOutlined, HomeOutlined, LockOutlined } from "@ant-design/icons";
 import Header from "../../Components/Header";
 
 const initialStudentData = {

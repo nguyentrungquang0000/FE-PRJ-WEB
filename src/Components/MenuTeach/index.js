@@ -1,5 +1,5 @@
+import { DatabaseOutlined, LineChartOutlined, MessageOutlined, SettingOutlined, SolutionOutlined, TeamOutlined, VideoCameraOutlined } from "@ant-design/icons";
 import { Menu } from "antd";
-import { DatabaseOutlined, LineChartOutlined, VideoCameraOutlined, SettingOutlined, MessageOutlined, MinusCircleOutlined, TeamOutlined, ExpandOutlined, SolutionOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 
 

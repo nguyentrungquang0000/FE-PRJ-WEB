@@ -1,8 +1,8 @@
+import { Button, Form, Input, Modal } from "antd";
+import FormItem from "antd/es/form/FormItem";
+import React, { useState } from "react";
 import Header from "../../Components/Header";
 import ClassMana from "../../Components/Management/ClassMana";
-import React, { useState } from "react";
-import { Modal, Form, Input, Button, Flex } from "antd";
-import FormItem from "antd/es/form/FormItem";
 
 function HomeClass(){
   const [isModalOpen, setIsModalOpen] = useState(false);
