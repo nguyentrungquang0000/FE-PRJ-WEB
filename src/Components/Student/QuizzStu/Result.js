@@ -49,5 +49,6 @@ export function QuizResultChart() {
 				/>
 			</div>
 		</Card>
+		
 	);
 }
