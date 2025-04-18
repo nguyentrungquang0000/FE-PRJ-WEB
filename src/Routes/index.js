@@ -6,6 +6,7 @@ import { SettingMana } from "../Components/Management/SettingMana";
 import MemberMana from "../Components/MemberMana";
 import MenuStu from "../Components/MenuStu";
 import Scoreboard from "../Components/Scoreboard";
+import AssignmentDetailStu from "../Components/Student/AssignmentDeteailaStu";
 import { AssignmentStudent } from "../Components/Student/AssignmentStudent";
 import { LectureStudent } from "../Components/Student/LectureStudent";
 import { MemberStudent } from "../Components/Student/MemberStudent";
@@ -23,32 +24,52 @@ import PageLogin from "../Page/PageLogin";
 import Profile from "../Page/Profile";
 export const routes = [
 	{
-		path: "/",
+		path: "/class/:id",
 		element: <LayoutTeach />,
 		children: [
 			{
-				path: "/",
+				path: "",
 				element: <HomeTeach />,
 			},
 			{
-				path: "/member-mana",
+				path: "member-mana",
 				element: <MemberMana />,
 			},
 			{
-				path: "/assignment-mana",
+				path: "assignment-mana",
 				element: <AssignmentMana />,
 			},
 			{
-				path: "/lecture-mana",
+				path: "assignment/:assId",
+				element: <AssignmentSubmiss />,
+			},
+			{
+				path: "lecture-mana",
 				element: <LectureMana />,
 			},
 			{
-				path: "/quizz-mana",
+				path: "quizz-mana",
 				element: <QuizzMana />,
 			},
 			{
-				path: "/setting-mana",
+				path: "quizz-crea",
+				element: <CreateQuizz />,
+			},
+			{
+				path: "setting-mana",
 				element: <SettingMana />,
+			},
+			{
+				path: "scoreboard",
+				element: <Scoreboard />,
+			},
+			{
+				path: "create-ass",
+				element: <CreateAssignment />,
+			},
+			{
+				path: "assignment-detail",
+				element: <AssignmentDetail />,
 			},
 		],
 	},
@@ -56,10 +77,7 @@ export const routes = [
 		path: "/login",
 		element: <PageLogin />,
 	},
-	{
-		path: "/create-ass",
-		element: <CreateAssignment />,
-	},
+	
 	{
 		path: "/menu-stu",
 		element: <MenuStu />,
@@ -73,9 +91,13 @@ export const routes = [
 		element: <Profile />,
 	},
 	{
-		path: "/home-stu",
+		path: "stu/class/:id",
 		element: <LayoutStu />,
 		children: [
+			{
+				path: "",
+				element: <HomeTeach />,
+			},
 			{
 				path: "member-stu",
 				element: <MemberStudent />,
@@ -99,23 +121,15 @@ export const routes = [
 			{
 				path: "result/:id",
 				element: <QuizResultChart />
-			}
+			},
+			{
+				path: "assignment-detail-stu",
+				element: <AssignmentDetailStu/>
+			},
 		],
 	},
-	{
-		path: "/assignment-detail",
-		element: <AssignmentDetail />,
-	},
-	{
-		path: "/assignment-submiss",
-		element: <AssignmentSubmiss />,
-	},
-	{
-		path: "/scoreboard",
-		element: <Scoreboard />,
-	},
-	{
-		path: "/quizz-crea",
-		element: <CreateQuizz />,
-	},
+	
+	
+	
+	
 ];

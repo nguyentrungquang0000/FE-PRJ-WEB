@@ -39,7 +39,7 @@ export function SettingMana() {
     <>
       <div style={{
         padding: '20px', 
-        maxWidth: '600px', 
+        maxWidth: '100%', 
         margin: '0 auto', 
         backgroundColor: 'white', 
         borderRadius: '8px', 

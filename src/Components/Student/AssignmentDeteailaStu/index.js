@@ -1,12 +1,12 @@
 
 import React, { useState } from "react";
-import { Card, Upload, Button, message, Typography, Input, DatePicker } from "antd";
+import { Card, Upload, Button, message, Typography } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 const { Dragger } = Upload;
 
-const AssignmentDetail = ({ assignment = {} }) => {
+const AssignmentDetailStu = ({ assignment = {} }) => {
   // Gán giá trị mặc định nếu không có giá trị từ assignment
   const {
     title = "Bài tập Lập trình Java",
@@ -45,25 +45,21 @@ const AssignmentDetail = ({ assignment = {} }) => {
 
   return (
     <div>
-
       <Card style={{ maxWidth: 600, margin: "20px auto", padding: 20, borderRadius: 10 }}>
         {/* Phần 1: Thông tin bài tập */}
         <div style={{ marginBottom: 20 }}>
-          <Input defaultValue={title} />
+          <Text strong>Tiêu đề: </Text><Text>{title}</Text><br />
           <Text strong>Người đăng: </Text><Text>{teacher}</Text><br />
           <Text strong>Ngày đăng: </Text><Text>{datePosted}</Text><br />
-          <Text strong>Hạn nộp: </Text>
-          <DatePicker showTime />
-          <Text>{deadline}</Text>
+          <Text strong>Hạn nộp: </Text><Text>{deadline}</Text>
         </div>
 
         {/* Phần 2: Mô tả bài tập & File đính kèm */}
         <div style={{ marginBottom: 20 }}>
           <Text strong>Mô tả: </Text>
-          <Input.TextArea defaultValue={description}></Input.TextArea>
-          <br />
+          <p>{description}</p>
           <Text strong>File đính kèm:</Text>
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer">Tải file</a>
+          <a href={fileUrl} target="_blank" rel="noopener noreferrer"> Tải file</a>
         </div>
         <div>
           <Dragger {...uploadProps}>
@@ -73,7 +69,7 @@ const AssignmentDetail = ({ assignment = {} }) => {
             <p className="ant-upload-text">Kéo file PDF vào đây hoặc bấm để chọn file</p>
           </Dragger>
           <Button type="primary" block style={{ marginTop: 10 }} onClick={handleSubmit}>
-            Lưu
+            Nộp bài
           </Button>
         </div>
       </Card>
@@ -81,4 +77,4 @@ const AssignmentDetail = ({ assignment = {} }) => {
   );
 };
 
-export default AssignmentDetail;
+export default AssignmentDetailStu;

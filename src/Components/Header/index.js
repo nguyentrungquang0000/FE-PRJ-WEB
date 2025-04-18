@@ -39,7 +39,7 @@ function Header() {
   return (
     <div style={{ position: "sticky", top: 0, right: 0, zIndex: 100 }}>
       <div className="header">
-        <div className="icon__home">
+        <div className="icon__home" onClick={() => navigate('/class')}>
           <HomeOutlined />
         </div>
 

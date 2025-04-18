@@ -1,65 +1,78 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Layout, List, Typography, Card } from "antd";
+import { useParams } from "react-router-dom";
+import { instance } from "../../../apis/instance";
 
 const { Content, Sider } = Layout;
 const { Title, Paragraph } = Typography;
 
-const videoData = [
-  {
-    url: "https://www.w3schools.com/html/mov_bbb.mp4",
-    title: "Bài giảng 1: Giới thiệu React",
-    description: "Tổng quan về React và cách sử dụng nó trong dự án thực tế."
-  },
-  {
-    url: "https://www.w3schools.com/html/movie.mp4",
-    title: "Bài giảng 2: Component trong React",
-    description: "Hiểu về component, props, và cách tái sử dụng chúng."
-  },
-  {
-    url: "https://www.w3schools.com/html/mov_bbb.mp4",
-    title: "Bài giảng 3: React Hooks",
-    description: "Giải thích về useState, useEffect và các hooks quan trọng khác."
-  }
-];
+// ✅ Hàm tách fileId từ URL Google Drive
+const getDriveFileId = (url) => {
+  const match = url.match(/[-\w]{25,}/);
+  return match ? match[0] : null;
+};
 
 export function LectureStudent() {
-  const [selectedVideo, setSelectedVideo] = useState(videoData[0]);
-  const videoRef = useRef(null); // Tạo ref để điều khiển video
+  const { id } = useParams();
+  const [videos, setVideos] = useState([]);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await instance.get(`/class/${id}/lecture`);
+        const data = res.data.data;
+        setVideos(data);
+        if (data.length > 0) {
+          setSelectedVideo(data[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch lectures:", error);
+      }
+    };
+    fetchData();
+  }, [id]);
 
   const changeVideo = (video) => {
-    setSelectedVideo({ ...video }); // Tạo object mới để React nhận diện thay đổi
+    setSelectedVideo({ ...video });
     if (videoRef.current) {
-      videoRef.current.load(); // Reset video để load lại từ đầu
+      videoRef.current.load();
     }
   };
 
   return (
     <Layout style={{ minHeight: "100vh", padding: 20 }}>
-      {/* Khu vực phát video */}
       <Content style={{ flex: 2, paddingRight: 20 }}>
-        <Card>
-          <video ref={videoRef} key={selectedVideo.url} width="100%" controls>
-            <source src={selectedVideo.url} type="video/mp4" />
-            Trình duyệt của bạn không hỗ trợ video.
-          </video>
-          <Title level={3} style={{ marginTop: 10 }}>{selectedVideo.title}</Title>
-          <Paragraph>{selectedVideo.description}</Paragraph>
-        </Card>
+        {selectedVideo && (
+          <Card>
+            <iframe
+              src={`https://drive.google.com/file/d/${getDriveFileId(selectedVideo.lectureUrl)}/preview`}
+              width="100%"
+              height="480"
+              allow="autoplay"
+              title={selectedVideo.title}
+              style={{ border: "none" }}
+            />
+            <Title level={3} style={{ marginTop: 10 }}>{selectedVideo.title}</Title>
+            <Paragraph>{selectedVideo.description}</Paragraph>
+          </Card>
+        )}
       </Content>
 
-      {/* Khu vực danh sách bài giảng */}
       <Sider width={300} style={{ background: "#fff", padding: "10px 20px" }}>
         <Title level={4}>Danh sách bài giảng</Title>
         <List
-          dataSource={videoData}
-          renderItem={(item) => (
+          dataSource={videos}
+          renderItem={(item, index) => (
             <List.Item
+              key={index}
               onClick={() => changeVideo(item)}
               style={{
                 cursor: "pointer",
                 padding: 10,
                 borderBottom: "1px solid #ddd",
-                background: selectedVideo.url === item.url ? "#f0f0f0" : "transparent"
+                background: selectedVideo && selectedVideo.lectureUrl === item.lectureUrl ? "#f0f0f0" : "transparent"
               }}
             >
               {item.title}

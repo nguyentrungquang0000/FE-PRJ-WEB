@@ -42,7 +42,7 @@ export function AssignmentStudent() {
           >
             <p><strong>Mô tả:</strong> {assignment.description}</p>
             <p><strong>Đánh giá:</strong> {assignment.grade}</p>
-            <Button type = "primary" onClick={()=>{nav('/assignment-detail')}}>
+            <Button type = "primary" onClick={()=>{nav('/home-stu/assignment-detail-stu')}}>
               Xem hướng dẫn
             </Button>
           </Panel>

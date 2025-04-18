@@ -1,39 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InputNumber, DatePicker, Form, Input, Modal, Button, Table, Tag } from "antd";
-import { useNavigate } from "react-router-dom";
-
-const quizzes = [
-  {
-    id: "quiz_001",
-    title: "JavaScript Basics",
-    description: "Test your knowledge about JavaScript fundamentals.",
-    total_questions: 10,
-    duration: 15,
-    created_by: "admin",
-    created_at: "2025-03-12T08:00:00Z",
-    due_date: "2025-03-20T23:59:59Z"
-  },
-  {
-    id: "quiz_002",
-    title: "Spring Boot Introduction",
-    description: "A beginner-friendly quiz on Spring Boot.",
-    total_questions: 12,
-    duration: 20,
-    created_by: "teacher_01",
-    created_at: "2025-03-10T10:30:00Z",
-    due_date: "2025-03-18T23:59:59Z"
-  },
-  {
-    id: "quiz_003",
-    title: "ReactJS Essentials",
-    description: "Covering components, state, and hooks.",
-    total_questions: 15,
-    duration: 25,
-    created_by: "teacher_02",
-    created_at: "2025-03-11T09:15:00Z",
-    due_date: "2025-03-22T23:59:59Z"
-  }
-];
+import { useNavigate, useParams } from "react-router-dom";
+import { instance } from "../../../apis/instance";
 
 const columns = [
   {
@@ -43,18 +11,24 @@ const columns = [
   },
   {
     title: "Title",
-    dataIndex: "title",
-    key: "title",
+    dataIndex: "name",
+    key: "name",
   },
   {
-    title: "Due Date",
-    dataIndex: "due_date",
-    key: "due_date",
-    render: (text) => new Date(text).toLocaleDateString(),
+    title: "Thời gian bắt đầu",
+    dataIndex: "startTime",
+    key: "startTime",
+  },
+  {
+    title: "Thời gian kết thúc",
+    dataIndex: "endTime",
+    key: "endTime",
   }
 ];
 
 export function QuizzMana(){
+  const {id} = useParams();
+  const [tests, setTests] = useState();
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,6 +43,15 @@ export function QuizzMana(){
     // Truyền dữ liệu form sang CreateQuizz qua state
     navigate('/quizz-crea', { state: { quizData: values } });
   };
+
+  useEffect(()=>{
+    const fetchData = async ()=> {
+      const res = await instance.get(`/class/${id}/test`);
+      setTests(res.data.data.content);
+      console.log(tests);
+    }
+    fetchData();
+  },[])
 
   return (
     <div>
@@ -131,19 +114,16 @@ export function QuizzMana(){
 
       <div>
         <Table
-          dataSource={quizzes}
+          dataSource={tests}
           columns={columns}
           rowKey="id"
           expandable={{
             expandedRowRender: (record) => (
               <>
-                <p><strong>Description:</strong> {record.description}</p>
-                <p><strong>Questions:</strong> {record.total_questions}</p>
-                <p><strong>Duration:</strong> {record.duration} minutes</p>
-                <p>
-                  <strong>Created By:</strong> <Tag color={record.created_by === "admin" ? "red" : "blue"}>{record.created_by}</Tag>
-                </p>
-                <p><strong>Created At:</strong> {new Date(record.created_at).toLocaleDateString()}</p>
+                <p><strong>Mô tả:</strong> {record.description}</p>
+                <p><strong>Số câu hỏi:</strong> {record.countQuestion}</p>
+                <p><strong>Thời gian:</strong> {record.examTime} phút</p>
+                <p><strong>Ngày đăng bài At:</strong> {new Date(record.createdAt).toLocaleDateString()}</p>
               </>
             ),
             expandRowByClick: true,

@@ -16,7 +16,18 @@ function LayoutTeach() {
         <div className="logo">
           <Image width={200} src="/image/Logo2-web.png" />
         </div>
-        <div class>Tên lớp học Giáo viên</div>
+        <div
+          style={{
+            borderBottom: "1px solid #b0b0b0",
+            borderTop: "1px solid #b0b0b0",
+            padding: "10px 0",
+            color: "#3D8EFF",
+            margin: "0 5px"
+          }}
+        >
+          <div class>Tên lớp học: Toán 1</div>
+          <div class>Giáo viên: Nguyễn Văn A</div>
+        </div>
         <MenuTeach />
       </Sider>
       <Layout style={{ position: "relative" }}>
