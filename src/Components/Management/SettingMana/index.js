@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Modal, Button, Input, Typography } from 'antd';
-
+import { instance } from '../../../apis/instance';
+import Cookies from 'js-cookie';
+import { useNavigate, useParams } from 'react-router-dom';
 const { Title, Paragraph } = Typography;
 
 export function SettingMana() {
   const [className, setClassName] = useState('Lớp học 1');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newClassName, setNewClassName] = useState(className);
-  const [isDeleted, setIsDeleted] = useState(false);
-
+  const {id} = useParams();
+  const token = Cookies.get('token');
+  const nav = useNavigate();
   // Mở modal để sửa tên lớp
   const showModal = () => {
     setNewClassName(className);
@@ -28,12 +31,20 @@ export function SettingMana() {
 
   // Xóa lớp
   const handleDelete = () => {
-    setIsDeleted(true);
+    const fetchData = async()=>{
+      try{
+        await instance.delete(`/delete-classroom/${id}`,{
+          headers:{
+            Authorization: `Bearer ${token}`,
+          }
+        })
+        alert('Xoá thành công');
+        nav(`/class`);
+      }catch(e){}
+    }
+    fetchData()
   };
 
-  if (isDeleted) {
-    return <div>Lớp học đã bị xóa.</div>;
-  }
 
   return (
     <>

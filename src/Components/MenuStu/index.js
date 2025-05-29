@@ -8,7 +8,7 @@ function MenuStu(){
 
   const items = [
     {
-      label: <Link to={`/stu/class/${id}/ass-stu`}>Trang chủ</Link>,
+      label: <Link to={`/stu/class/${id}`}>Trang chủ</Link>,
       icon: <LineChartOutlined />,
       key: "Menu-1"
     },
@@ -28,7 +28,7 @@ function MenuStu(){
       key: "Menu-4"
     },
     {
-      label: <Link to={`/stu/class/${id}/ass-stu`}>Nhóm Chat</Link>,
+      label: <Link to={`/stu/class/${id}/chat`}>Nhóm Chat</Link>,
       icon: <MessageOutlined />,
       key: "Menu-5"
     },
@@ -38,7 +38,7 @@ function MenuStu(){
       key: "Menu-6"
     },
     {
-      label: <Link to={`/stu/class/${id}/ass-stu`}>Cài đặt</Link>,
+      label: <Link to={`/stu/class/${id}/setting`}>Cài đặt</Link>,
       icon: <SettingOutlined />,
       key: "Menu-7"
     }

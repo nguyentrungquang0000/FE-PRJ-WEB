@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Layout, List, Typography, Card } from "antd";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { instance } from "../../../apis/instance";
-
+import Cookies from 'js-cookie';
 const { Content, Sider } = Layout;
 const { Title, Paragraph } = Typography;
 
@@ -17,17 +17,25 @@ export function LectureStudent() {
   const [videos, setVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const videoRef = useRef(null);
-
+  const token = Cookies.get('token');
+  const nav = useNavigate();
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await instance.get(`/class/${id}/lecture`);
+        const res = await instance.get(`/class/${id}/lecture`, {
+          headers:{
+            Authorization: `Bearer ${token}`,
+          }
+        });
         const data = res.data.data;
         setVideos(data);
         if (data.length > 0) {
           setSelectedVideo(data[0]);
         }
       } catch (error) {
+        if(error.response.status === 403){
+          nav(`/error403`);
+        }
         console.error("Failed to fetch lectures:", error);
       }
     };

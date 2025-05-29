@@ -1,78 +1,92 @@
+import React, { useEffect, useState } from "react";
+import { Card, Typography, Divider } from "antd";
+import { useNavigate, useParams } from "react-router-dom";
+import { instance } from "../../../apis/instance";
+import Cookies from "js-cookie";
+import { SubmitAssStu } from "../SubmitAssStu";
 
-import React, { useState } from "react";
-import { Card, Upload, Button, message, Typography } from "antd";
-import { InboxOutlined } from "@ant-design/icons";
+const { Text, Title } = Typography;
 
-const { Text } = Typography;
-const { Dragger } = Upload;
+const AssignmentDetailStu = () => {
+  const { id, assId } = useParams();
+  const token = Cookies.get("token");
+  const nav = useNavigate();
+  const [assignment, setAssignment] = useState({});
 
-const AssignmentDetailStu = ({ assignment = {} }) => {
-  // Gán giá trị mặc định nếu không có giá trị từ assignment
-  const {
-    title = "Bài tập Lập trình Java",
-    teacher = "Nguyễn Văn B",
-    deadline = "2025-03-15 23:59",
-    description = "Hãy viết chương trình Java tính tổng các số từ 1 đến 100.",
-    fileUrl = "https://example.com/file1.pdf", // Chỉ có một file
-    datePosted = "2025-03-01 10:00",  // Thêm ngày đăng mặc định
-  } = assignment;
-
-  const [fileList, setFileList] = useState([]);
-
-  // Xử lý upload file
-  const uploadProps = {
-    maxCount: 1, // Giới hạn chỉ cho phép upload 1 file
-    beforeUpload: (file) => {
-      if (file.type !== "application/pdf") {
-        message.error("Chỉ được upload file PDF!");
-        return Upload.LIST_IGNORE;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await instance.get(`/assignment/${assId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAssignment(res.data.data);
+      } catch (error) {
+        if(error.response.status === 403){
+          nav(`/error403`);
+        }
+        console.error("Error fetching assignment:", error);
       }
-      setFileList([file]); // Luôn chỉ giữ 1 file
-      return false; // Không upload ngay, đợi user nhấn "Nộp bài"
-    },
-    onRemove: () => setFileList([]),
-    fileList,
-  };
+    };
+    fetchData();
+  }, [assId, token]);
 
-  const handleSubmit = () => {
-    if (fileList.length === 0) {
-      message.warning("Vui lòng chọn file trước khi nộp bài!");
-      return;
-    }
-    message.success("Bài tập đã được nộp thành công!");
-    setFileList([]); // Xóa danh sách file sau khi nộp
+  const extractGoogleDriveId = (url) => {
+    const match = url.match(/id=([^&]+)/);
+    return match ? match[1] : "";
   };
 
   return (
-    <div>
-      <Card style={{ maxWidth: 600, margin: "20px auto", padding: 20, borderRadius: 10 }}>
-        {/* Phần 1: Thông tin bài tập */}
-        <div style={{ marginBottom: 20 }}>
-          <Text strong>Tiêu đề: </Text><Text>{title}</Text><br />
-          <Text strong>Người đăng: </Text><Text>{teacher}</Text><br />
-          <Text strong>Ngày đăng: </Text><Text>{datePosted}</Text><br />
-          <Text strong>Hạn nộp: </Text><Text>{deadline}</Text>
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        padding: "1.2rem",
+        background: "#f9f9f9",
+        minHeight: "100vh",
+        gap: "2rem",
+      }}
+    >
+      {/* Thông tin bài tập */}
+      <Card
+        title={<Title level={4}>{assignment.title}</Title>}
+        style={{
+          width: "100%",
+          maxWidth: "700px",
+          borderRadius: "12px",
+          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.05)",
+        }}
+      >
+        <div style={{ marginBottom: "1.2rem" }}>
+          <Text strong>Ngày đăng:</Text> <Text>{new Date(assignment.createdDate).toLocaleString()}</Text> <br />
+          <Text strong>Hạn nộp:</Text> <Text type="danger">{new Date(assignment.dueDate).toLocaleString()}</Text>
         </div>
 
-        {/* Phần 2: Mô tả bài tập & File đính kèm */}
-        <div style={{ marginBottom: 20 }}>
-          <Text strong>Mô tả: </Text>
-          <p>{description}</p>
-          <Text strong>File đính kèm:</Text>
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer"> Tải file</a>
+        <Divider />
+
+        <div style={{ marginBottom: "1.2rem" }}>
+          <Text strong>Mô tả:</Text>
+          <p style={{ marginTop: "0.5rem" }}>{assignment.description}</p>
         </div>
+
         <div>
-          <Dragger {...uploadProps}>
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Kéo file PDF vào đây hoặc bấm để chọn file</p>
-          </Dragger>
-          <Button type="primary" block style={{ marginTop: 10 }} onClick={handleSubmit}>
-            Nộp bài
-          </Button>
+          <Text strong>File đính kèm:</Text>{" "}
+          {assignment.fileUrl ? (
+            <a
+              href={`https://drive.google.com/file/d/${extractGoogleDriveId(assignment.fileUrl)}/preview`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Xem file
+            </a>
+          ) : (
+            <Text type="secondary">Không có file</Text>
+          )}
         </div>
       </Card>
+
+      {/* Phần nộp bài (SubmitAssStu) */}
+      <SubmitAssStu  />
     </div>
   );
 };

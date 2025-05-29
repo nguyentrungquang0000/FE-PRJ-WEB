@@ -1,82 +1,178 @@
+import { UploadOutlined } from "@ant-design/icons";
+import { Button, Card, Descriptions, Form, Input, Modal, Checkbox, Upload, message, DatePicker } from "antd";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { instance } from "../../apis/instance";
+import Cookies from 'js-cookie';
+import dayjs from 'dayjs'; // Bổ sung nếu chưa có
 
-import React, { useState } from "react";
-import { Card, Upload, Button, message, Typography, Input, DatePicker } from "antd";
-import { InboxOutlined } from "@ant-design/icons";
-
-const { Text } = Typography;
-const { Dragger } = Upload;
-
-const AssignmentDetail = ({ assignment = {} }) => {
-  // Gán giá trị mặc định nếu không có giá trị từ assignment
-  const {
-    title = "Bài tập Lập trình Java",
-    teacher = "Nguyễn Văn B",
-    deadline = "2025-03-15 23:59",
-    description = "Hãy viết chương trình Java tính tổng các số từ 1 đến 100.",
-    fileUrl = "https://example.com/file1.pdf", // Chỉ có một file
-    datePosted = "2025-03-01 10:00",  // Thêm ngày đăng mặc định
-  } = assignment;
-
+const AssignmentDetail = () => {
+  const { id, assId } = useParams();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
+  const token = Cookies.get('token');
+  const [assignment, setAssignment] = useState({});
+  const [change, setChange] = useState(false);
   const [fileList, setFileList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const nav = useNavigate();
 
-  // Xử lý upload file
-  const uploadProps = {
-    maxCount: 1, // Giới hạn chỉ cho phép upload 1 file
-    beforeUpload: (file) => {
-      if (file.type !== "application/pdf") {
-        message.error("Chỉ được upload file PDF!");
-        return Upload.LIST_IGNORE;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await instance.get(`/assignment/${assId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
+        const data = res.data.data;
+        setAssignment(data);
+        form.setFieldsValue({
+          title: data.title,
+          description: data.description,
+          dueDate: data.dueDate ? dayjs(data.dueDate) : null // Chuyển sang object dayjs
+        });
+      } catch (err) {
+        if(err.response.status === 403){
+          nav(`/error403`);
+        }
+        if(err.response.status === 401){
+          nav(`/`);
+        }
+        console.log(err.message);
       }
-      setFileList([file]); // Luôn chỉ giữ 1 file
-      return false; // Không upload ngay, đợi user nhấn "Nộp bài"
-    },
-    onRemove: () => setFileList([]),
-    fileList,
-  };
+    };
+    fetchData();
+  }, [loading]);
 
-  const handleSubmit = () => {
-    if (fileList.length === 0) {
-      message.warning("Vui lòng chọn file trước khi nộp bài!");
-      return;
+  const getPreviewUrl = (url) => {
+    const match = url.match(/id=([^&]+)/);
+    if (match && match[1]) {
+      return `https://drive.google.com/file/d/${match[1]}/preview`;
     }
-    message.success("Bài tập đã được nộp thành công!");
-    setFileList([]); // Xóa danh sách file sau khi nộp
+    return url;
+  };
+  
+
+  const handleEditSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      const formData = new FormData();
+
+      formData.append("title", values.title);
+      formData.append("description", values.description || "");
+
+      // Format ngày đúng định dạng
+      if (values.dueDate) {
+        formData.append("dueDate", dayjs(values.dueDate).format("YYYY-MM-DD HH:mm:ss"));
+      }
+
+      formData.append("change", change ? "true" : "false");
+      formData.append("multipartFile", (change && fileList.length > 0) ? fileList[0].originFileObj : null);
+
+      const res = await instance.put(`/class/${id}/assignment/${assId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setLoading(!loading);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.log(err);
+      message.error("Cập nhật thất bại!");
+    }
   };
 
   return (
     <div>
+      <div style={{ backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
+        <div style={{ display: "flex", justifyContent: "center", padding: "20px 50px" }}>
+          <div style={{ width: "100%", maxWidth: "800px" }}>
+            <Card style={{ backgroundColor: "#fff", marginBottom: 20, boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>
+              <Descriptions title="Thông Tin Bài Tập" bordered column={1}>
+                <Descriptions.Item label="Tiêu đề">{assignment.title}</Descriptions.Item>
+                <Descriptions.Item label="Mô tả">{assignment.description}</Descriptions.Item>
+                <Descriptions.Item label="Hạn nộp">{new Date(assignment.dueDate).toLocaleString()}</Descriptions.Item>
+                <Descriptions.Item label="Ngày đăng">{new Date(assignment.createdDate).toLocaleString()}</Descriptions.Item>
+                {assignment.fileUrl && (
+                  <Descriptions.Item label="File đính kèm">
+                    <a
+                      href={getPreviewUrl(assignment.fileUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Xem file đính kèm
+                    </a>
+                  </Descriptions.Item>
+                )}
 
-      <Card style={{ maxWidth: 600, margin: "20px auto", padding: 20, borderRadius: 10 }}>
-        {/* Phần 1: Thông tin bài tập */}
-        <div style={{ marginBottom: 20 }}>
-          <Input defaultValue={title} />
-          <Text strong>Người đăng: </Text><Text>{teacher}</Text><br />
-          <Text strong>Ngày đăng: </Text><Text>{datePosted}</Text><br />
-          <Text strong>Hạn nộp: </Text>
-          <DatePicker showTime />
-          <Text>{deadline}</Text>
+              </Descriptions>
+              <Button type="primary" onClick={() => setIsModalOpen(true)} style={{ marginTop: 20 }}>
+                Đổi Thông tin
+              </Button>
+            </Card>
+          </div>
         </div>
 
-        {/* Phần 2: Mô tả bài tập & File đính kèm */}
-        <div style={{ marginBottom: 20 }}>
-          <Text strong>Mô tả: </Text>
-          <Input.TextArea defaultValue={description}></Input.TextArea>
-          <br />
-          <Text strong>File đính kèm:</Text>
-          <a href={fileUrl} target="_blank" rel="noopener noreferrer">Tải file</a>
-        </div>
-        <div>
-          <Dragger {...uploadProps}>
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Kéo file PDF vào đây hoặc bấm để chọn file</p>
-          </Dragger>
-          <Button type="primary" block style={{ marginTop: 10 }} onClick={handleSubmit}>
-            Lưu
-          </Button>
-        </div>
-      </Card>
+        <Modal
+          title="Chỉnh sửa thông tin bài tập"
+          open={isModalOpen}
+          onCancel={() => setIsModalOpen(false)}
+          onOk={handleEditSubmit}
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="title"
+              label="Tiêu đề"
+              rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              name="description"
+              label="Mô tả"
+              rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
+            >
+              <Input.TextArea rows={3} />
+            </Form.Item>
+
+            <Form.Item
+              label="Hạn nộp"
+              name="dueDate"
+              rules={[{ required: true, message: "Vui lòng chọn hạn nộp!" }]}>
+              <DatePicker
+                showTime
+                format="YYYY-MM-DD HH:mm"
+                style={{ borderRadius: "6px", padding: "6px" }}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Checkbox checked={change} onChange={(e) => setChange(e.target.checked)}>
+                Tải file mới
+              </Checkbox>
+            </Form.Item>
+
+            {change && (
+              <Form.Item
+                name="file"
+                label="Tải lên file"
+              >
+                <Upload
+                  beforeUpload={() => false}
+                  maxCount={1}
+                  fileList={fileList}
+                  onChange={({ fileList }) => setFileList(fileList)}
+                >
+                  <Button icon={<UploadOutlined />}>Chọn file</Button>
+                </Upload>
+              </Form.Item>
+            )}
+          </Form>
+        </Modal>
+      </div>
     </div>
   );
 };

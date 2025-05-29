@@ -4,8 +4,9 @@ import {
   HomeOutlined
 } from "@ant-design/icons";
 import { Avatar, Dropdown } from "antd";
-import "./Header.scss";
 import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import "./Header.scss"; // Nếu cần, bạn có thể chỉnh lại CSS ở đây
 
 function Header() {
   const navigate = useNavigate(); // Hook để chuyển hướng
@@ -20,9 +21,17 @@ function Header() {
     else if (key === "1") {
       console.log("Đăng xuất...");
       // Xử lý đăng xuất ở đây (ví dụ: xóa token và chuyển đến trang login)
-      navigate("/login");
+      navigate("/");
     }
   };
+
+  const handleLogout =() =>{
+    Object.keys(Cookies.get()).forEach((cookieName) => {
+      Cookies.remove(cookieName);
+    });
+
+    navigate("/");
+  }
 
   // Danh sách menu
   const items = [
@@ -32,6 +41,7 @@ function Header() {
     },
     {
       label: "Đăng xuất", // Mục đăng xuất
+      onClick: handleLogout,
       key: "1",
     },
   ];
@@ -55,7 +65,7 @@ function Header() {
               <div>
                 <Avatar icon={<AntDesignOutlined />} />
               </div>
-              <div>Name</div>
+              <div></div>
               <CaretDownOutlined />
             </div>
           </Dropdown>

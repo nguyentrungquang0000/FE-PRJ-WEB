@@ -10,6 +10,7 @@ function CreateAssignment(){
   const token = Cookies.get("token");
   const {id} = useParams();
   const [fileList, setFileList] = useState([]);
+  
   const handleUploadChange = ({ fileList }) => {
     setFileList(fileList);
   };
@@ -35,7 +36,7 @@ function CreateAssignment(){
   }
 
   return(
-    <div style={{ maxWidth: "99%", margin: "0 auto", padding: "15px", background: "#fff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}>
+    <div style={{ maxWidth: "90%", margin: "0 auto", padding: "15px", background: "#fff", borderRadius: "8px", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}>
       <div style={{ textAlign: "center", fontSize: "24px", fontWeight: "bold", marginBottom: "15px" }}>
         <h2>Tạo bài tập</h2>  
       </div>
@@ -44,15 +45,13 @@ function CreateAssignment(){
           <Form.Item
             label="Tiêu đề bài tập"
             name="title"
-            rules={[{ required: true, message: "Vui lòng nhập tiêu đề!" }]}
-          >
+            rules={[{ required: true, message: "Vui lòng nhập tiêu đề!" }]}>
             <Input placeholder="Nhập tiêu đề bài tập" style={{ borderRadius: "6px", padding: "6px" }} />
           </Form.Item>
 
           <Form.Item
             label="Mô tả"
-            name="description"
-          >
+            name="description">
             <Input.TextArea rows={3} placeholder="Nhập mô tả bài tập" style={{ borderRadius: "6px", padding: "6px" }} />
           </Form.Item>
 
@@ -70,15 +69,13 @@ function CreateAssignment(){
           <Form.Item
             label="Hạn nộp"
             name="dueDate"
-            rules={[{ required: true, message: "Vui lòng chọn hạn nộp!" }]}
-          >
+            rules={[{ required: true, message: "Vui lòng chọn hạn nộp!" }]}>
             <DatePicker
               showTime
               format="YYYY-MM-DD HH:mm"
               style={{ borderRadius: "6px", padding: "6px" }}
             />
           </Form.Item>
-
 
           <Form.Item>
             <Button type="primary" htmlType="submit" style={{ width: "100%", height: "38px", fontSize: "16px", fontWeight: "600" }}>
@@ -88,7 +85,7 @@ function CreateAssignment(){
         </Form>
       </div>
     </div>
-  )
+  );
 }
 
 export default CreateAssignment;

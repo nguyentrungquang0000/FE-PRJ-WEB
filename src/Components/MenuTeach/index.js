@@ -34,7 +34,7 @@ function MenuTeach() {
       key: "Menu-4",
     },
     {
-      label: <Link to={`/class/${id}/chat-group`}>Nhóm Chat</Link>,
+      label: <Link to={`/class/${id}/chat`}>Nhóm Chat</Link>,
       icon: <MessageOutlined />,
       key: "Menu-5",
     },

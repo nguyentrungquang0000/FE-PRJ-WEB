@@ -1,44 +1,88 @@
 import { useEffect, useState } from "react";
-import {
-  Flex,
-  Typography,
-  List,
-  Card,
-  InputNumber,
-  Button,
-  Form,
-  Input,
-} from "antd";
-import { useParams } from "react-router-dom";
+import {Flex,Typography,List,Card,InputNumber,Button,message,} from "antd";
+import { useNavigate, useParams } from "react-router-dom";
 import { instance } from "../../apis/instance";
+import Cookies from 'js-cookie'
 const { Title, Text } = Typography;
 
 function AssignmentSubmiss() {
+  const token = Cookies.get('token')
   const { id, assId } = useParams();
   const [submits, setSubmits] = useState([]);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [score, setScore] = useState(null);
-
+  const [loading, setLoading] = useState(false);
+  const nav = useNavigate();
+  // Gọi API lấy danh sách bài nộp khi load component
   useEffect(() => {
     const fetchData = async () => {
-      const res = await instance.get(`/class/${id}/assignment/${assId}`);
-      setSubmits(res.data.data.content);
+      try {
+        const res = await instance.get(`/class/${id}/assignment/${assId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setSubmits(res.data.data.content);
+      } catch (err) {
+        if(err.response.status === 403){
+          nav(`/error403`);
+        }
+        if(err.response.status === 401){
+          nav(`/`);
+        }
+        message.error("Lỗi khi tải bài nộp");
+      }
     };
     fetchData();
-  }, []);
+  }, [id, assId, loading]);
 
+  // Khi chọn bài nộp
   const handleSelect = (submission) => {
     setSelectedSubmission(submission);
     setScore(submission.score);
   };
+
+  // Chuyển Google Drive URL sang dạng preview
   const convertToPreviewUrl = (originalUrl) => {
     const match = originalUrl.match(/id=([^&]+)/);
-    if (match && match[1]) {
-      return `https://drive.google.com/file/d/${match[1]}/preview`;
-    }
-    return null; // Trường hợp không match
+    return match ? `https://drive.google.com/file/d/${match[1]}/preview` : null;
   };
 
+  // Gửi điểm chấm bài
+  const handleScoreSubmit = async (value) => {
+    if (score === null || score < 0 || score > 10) {
+      message.warning("Điểm phải từ 0 đến 10");
+      return;
+    }
+
+    try {
+      const res = await instance.put(`/class/${id}/assignment/${assId}/s/${value}`, {score}, {
+        headers:{
+          Authorization: `Bearer ${token}`,
+        }
+      });
+
+      if (res.data.status === 200) {
+        message.success("Chấm điểm thành công!");
+        // Cập nhật lại danh sách bài nộp
+        const updatedList = submits.map((s) =>
+          s.id === selectedSubmission.id
+            ? { ...s, score, statusSubmit: "SCORED" }
+            : s
+        );
+        setSubmits(updatedList);
+        setSelectedSubmission({ ...selectedSubmission, score, statusSubmit: "SCORED" });
+        setLoading(!loading);
+      } else {
+        message.error("Chấm điểm thất bại!");
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("Có lỗi khi gửi điểm");
+    }
+  };
+
+  // Component giao diện
   return (
     <div style={{ height: "100%" }}>
       <Flex
@@ -49,7 +93,7 @@ function AssignmentSubmiss() {
           overflow: "hidden",
         }}
       >
-        {/* Left Panel - List of submissions */}
+        {/* LEFT: Danh sách bài nộp */}
         <div
           style={{
             width: "40%",
@@ -58,9 +102,7 @@ function AssignmentSubmiss() {
             background: "#f9f9f9",
           }}
         >
-          <Title level={4} style={{ marginBottom: "12px" }}>
-            Bài nộp
-          </Title>
+          <Title level={4}>Bài nộp</Title>
           <List
             dataSource={submits}
             renderItem={(item) => (
@@ -70,89 +112,69 @@ function AssignmentSubmiss() {
                   cursor: "pointer",
                   padding: "10px",
                   borderRadius: "6px",
-                  transition: "background 0.3s",
                   background:
-                    selectedSubmission?.id === item.id
-                      ? "#e6f7ff"
-                      : "transparent",
+                    selectedSubmission?.id === item.id ? "#e6f7ff" : "transparent",
                 }}
               >
                 <Text strong>{item.studentName}</Text>
                 <Text type="secondary" style={{ marginLeft: "8px" }}>
-                  ({item.submissionTime})
+                  ({new Date(item.submissionTime).toLocaleString()})
                 </Text>
-                <Text strong>{item.statusSubmit}</Text>
+                {item.statusSubmit === "SCORED" && (
+                  <Text strong style={{ marginLeft: "auto" }}>{item.score}</Text>
+                )}
+                {item.statusSubmit != "SCORED" && (
+                  <Text strong style={{ marginLeft: "auto" }}>Chưa chấm</Text>
+                )}
+
               </List.Item>
             )}
           />
         </div>
 
-        {/* Right Panel - Submission Details */}
+        {/* RIGHT: Chi tiết bài nộp */}
         <div style={{ width: "60%", padding: "16px", background: "#fff" }}>
           {selectedSubmission ? (
             <Card
-              title={`Chi tiết bài nộp - ${selectedSubmission.studentName}`}
-              style={{
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                width: "100%",
-                maxWidth: 800,
-              }}
+              title={`Chi tiết - ${selectedSubmission.studentName}`}
+              style={{ maxWidth: 800, width: "100%" }}
             >
-              <div style={{ marginBottom: 16 }}>
-                <p style={{ margin: "8px 0" }}>
-                  <strong>Ngày nộp:</strong> {selectedSubmission.submissionTime}
-                </p>
-                <p style={{ margin: "8px 0" }}>
-                  <strong>Trạng thái:</strong> {selectedSubmission.statusSubmit}
-                </p>
-                {(selectedSubmission.statusSubmit === "SUBMITTED" ||
-                  selectedSubmission.statusSubmit === "CONFIRMED") && (
-                  <>
-                    <p style={{ margin: "8px 0" }}>
-                      <strong>Điểm:</strong> CHƯA CHẤM
-                    </p>
-                    <div>
-                      <p style={{ margin: "8px 0" }}>
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                          <strong>Chấm điểm: </strong>
-                          <Input
-                            onChange={(e) => {
-                              if (/^-?\d+$/.test(e.target.value))
-                                setScore(e.target.value)}
-                            }
-                            style={{ width: "100px" }}
-                          />
-                          {score ? <Button type="primary">Submit</Button> : <></>}
-                        </div>
-                      </p>
-                    </div>
-                  </>
-                )}
-                {(selectedSubmission.statusSubmit === "SCORED") &&(
-                  <>
-                    <p style={{ margin: "8px 0" }}>
-                      <strong>Điểm:</strong> {selectedSubmission.score}
-                    </p>
-                    <div>
-                      <p style={{ margin: "8px 0" }}>
-                        <div style={{ display: "flex", alignItems: "center" }}>
-                          <strong>Chấm điểm: </strong>
-                          <Input
-                            onChange={(e) => {
-                              if (/^-?\d+$/.test(e.target.value))
-                                setScore(e.target.value)}
-                            }
-                            style={{ width: "100px" }}
-                          />
-                          {score ? <Button type="primary">Submit</Button> : <></>}
-                        </div>
-                      </p>
-                    </div>
-                  </>//
-                )}
-              </div> 
+              <p><strong>Ngày nộp:</strong> {selectedSubmission.submissionTime}</p>
+              <p><strong>Trạng thái:</strong> {selectedSubmission.statusSubmit}</p>
 
-              {/* Xử lý hiển thị file */}
+              {/* Nếu bài đã nộp hoặc đã chấm */}
+              {(selectedSubmission.statusSubmit === "SUBMITTED" ||
+                selectedSubmission.statusSubmit === "CONFIRMED" ||
+                selectedSubmission.statusSubmit === "SCORED") && (
+                <>
+                  <p>
+                    <strong>Điểm:</strong>{" "}
+                    {selectedSubmission.statusSubmit === "SCORED"
+                      ? selectedSubmission.score
+                      : "CHƯA CHẤM"}
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <strong>Chấm điểm:</strong>
+                    <InputNumber
+                      min={0}
+                      max={10}
+                      step={0.5}
+                      value={score}
+                      onChange={(value) => setScore(value)}
+                      style={{ width: 100 }}
+                    />
+                    <Button
+                      type="primary"
+                      onClick={() => handleScoreSubmit(selectedSubmission.id)}
+                      disabled={score === null}
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {/* Hiển thị file nếu có */}
               {selectedSubmission.submitUrl && (
                 <iframe
                   src={convertToPreviewUrl(selectedSubmission.submitUrl)}
@@ -160,6 +182,7 @@ function AssignmentSubmiss() {
                   height="400"
                   allow="autoplay"
                   title="Drive File Preview"
+                  style={{ marginTop: 20 }}
                 />
               )}
             </Card>
