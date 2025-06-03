@@ -12,7 +12,6 @@ function MemberMana() {
   const token = Cookies.get("token");
   const { id } = useParams();
 
-  // Thêm state cho phân trang và tìm kiếm
   const [members, setMembers] = useState([]);
   const [reload, setReload] = useState(false);
   const [studentPendings, setStudentPendings] = useState([]);
@@ -104,7 +103,6 @@ function MemberMana() {
     },
   ];
 
-  // Hàm xử lý khi tìm kiếm
   const onSearch = (value) => {
     setKeyword(value);
     setPage(0);

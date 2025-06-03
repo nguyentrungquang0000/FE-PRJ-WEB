@@ -20,13 +20,10 @@ export function QuizResultChart() {
           },
         });
         setQuiz(res.data.data);
-        console.log(quizSubmitId);
-        console.log(res.data.data);
       } catch (error) {
         if(error.response.status === 403){
           navigate(`/error403`);
         }
-        console.log(error);
       }
     };
     fetchData();

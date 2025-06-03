@@ -12,24 +12,24 @@ export function SettingMana() {
   const {id} = useParams();
   const token = Cookies.get('token');
   const nav = useNavigate();
-  // Mở modal để sửa tên lớp
+  
   const showModal = () => {
     setNewClassName(className);
     setIsModalVisible(true);
   };
 
-  // Đóng modal
+  
   const handleCancel = () => {
     setIsModalVisible(false);
   };
 
-  // Lưu tên lớp mới
+  
   const handleOk = () => {
     setClassName(newClassName);
     setIsModalVisible(false);
   };
 
-  // Xóa lớp
+  
   const handleDelete = () => {
     const fetchData = async()=>{
       try{
@@ -106,7 +106,7 @@ export function SettingMana() {
           </Button>
         </div>
 
-        {/* Modal đổi tên lớp */}
+        
         <Modal
           title="Đổi tên lớp học"
           visible={isModalVisible}

@@ -42,7 +42,6 @@ const Dashboard = () => {
         if(error.response.status === 401){
           nav(`/`);
         }
-        console.error("Error loading dashboard", error);
       }
     };
 

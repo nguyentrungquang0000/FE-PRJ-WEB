@@ -30,6 +30,24 @@ const Profile = () => {
     });
   };
 
+  const handleChangePassword = (values)=>{
+    const changePassword = async ()=>{
+      try{
+        const res = await instance.put(`/change-password`, values, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        })
+        alert("Đổi mật khẩu thành công!");
+        setIsPasswordModalOpen(false);
+      }catch(error){
+        alert(error.response?.data?.message || "Đã xảy ra lỗi.");
+      }
+    }
+    changePassword();
+    
+  }
+
   useEffect(()=> {
     const fetchData= async()=>{
       try{
@@ -51,7 +69,6 @@ const Profile = () => {
         <div style={{ width: "100%", maxWidth: "800px" }}>
           <Card style={{ backgroundColor: "#fff", marginBottom: 20, boxShadow: "0 4px 8px rgba(0,0,0,0.1)" }}>
             <Descriptions title="Thông Tin Cá Nhân" bordered column={1}>
-              <Descriptions.Item label="ID">{studentData.id}</Descriptions.Item>
               <Descriptions.Item label="Họ và Tên">{studentData.name}</Descriptions.Item>
               <Descriptions.Item label="Giới Tính">{studentData.sex}</Descriptions.Item>
               <Descriptions.Item label="Địa Chỉ">
@@ -80,7 +97,10 @@ const Profile = () => {
       </div>
 
       <Modal title="Chỉnh sửa thông tin cá nhân" open={isModalOpen} onOk={handleOk} onCancel={() => setIsModalOpen(false)}>
-        <Form form={form} layout="vertical">
+        <Form 
+          form={form} 
+          layout="vertical"
+        >
           <Form.Item name="name" label="Họ và Tên" rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}> 
             <Input />
           </Form.Item>
@@ -93,8 +113,12 @@ const Profile = () => {
         </Form>
       </Modal>
 
-      <Modal title="Đổi Mật Khẩu" open={isPasswordModalOpen} onOk={() => setIsPasswordModalOpen(false)} onCancel={() => setIsPasswordModalOpen(false)}>
-        <Form form={passwordForm} layout="vertical">
+      <Modal title="Đổi Mật Khẩu" open={isPasswordModalOpen} footer = {null} onCancel={() => setIsPasswordModalOpen(false)}>
+        <Form 
+          form={passwordForm} 
+          layout="vertical"
+          onFinish={handleChangePassword}
+        >
           <Form.Item name="oldPassword" label="Mật Khẩu Hiện Tại" rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại" }]}> 
             <Input.Password />
           </Form.Item>
@@ -103,6 +127,9 @@ const Profile = () => {
           </Form.Item>
           <Form.Item name="confirmPassword" label="Nhập Lại Mật Khẩu Mới" rules={[{ required: true, message: "Vui lòng nhập lại mật khẩu mới" }]}> 
             <Input.Password />
+          </Form.Item>
+          <Form.Item>
+            <Button  type="primary" htmlType="submit">Đổi mật khẩu</Button>
           </Form.Item>
         </Form>
       </Modal>
